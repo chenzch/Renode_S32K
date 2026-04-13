@@ -1,1 +1,1 @@
-# QEMU_S32K
+# Renode_S32K
