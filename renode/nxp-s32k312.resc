@@ -8,7 +8,7 @@ mach create $name
 include @./nxp-s32k312.repl
 :showAnalyzer lpuart0
 
-$bin?=@../TestApp/baremetal/build/baremetal.elf
+$bin?=@../TestApp/baremetal/Debug_FLASH/baremetal.elf
 
 sysbus LoadELF $bin
 

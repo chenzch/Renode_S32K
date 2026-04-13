@@ -520,7 +520,7 @@ void __NAKED __NO_RETURN Reset_Handler(void)
 
   SystemInit();                             /* CMSIS System Initialization */
 
-  main();                        /* Enter PreMain (C library entry point) */
+  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
 }
 #if defined (__ICCARM__)
 #pragma diag_default=Pe1305
