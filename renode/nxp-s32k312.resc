@@ -1,0 +1,17 @@
+:name: NXP S32K312
+:description: This script runs Zephyr Shell demo on S32K312
+
+using sysbus
+$name?="NXP S32K312"
+mach create $name
+
+include @./nxp-s32k312.repl
+:showAnalyzer lpuart0
+
+$bin?=@../TestApp/baremetal/build/baremetal.elf
+
+sysbus LoadELF $bin
+
+sysbus.cpu0 VectorTableOffset `sysbus GetSymbolAddress "__Vectors"`
+
+machine StartGdbServer 3333
