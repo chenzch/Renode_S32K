@@ -2,10 +2,13 @@
 :description: This script runs Zephyr Shell demo on S32K312
 
 using sysbus
+
+include @./Peripherals/NXP/S32K3/MCResetGenerationModule.cs
+
 $name?="NXP S32K312"
 mach create $name
 
-include @./nxp-s32k312.repl
+machine LoadPlatformDescription @./platforms/boards/nxp-minievb-s32k312.repl
 :showAnalyzer lpuart0
 
 $bin?=@../TestApp/baremetal/Debug_FLASH/baremetal.elf
