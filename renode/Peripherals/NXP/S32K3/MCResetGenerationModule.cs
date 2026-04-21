@@ -3,6 +3,7 @@ using Antmicro.Renode.Core;
 using Antmicro.Renode.Logging;
 using Antmicro.Renode.Core.Structure.Registers;
 using Antmicro.Renode.Peripherals;
+using WT.Renode;
 
 namespace Antmicro.Renode.Peripherals.NXP.S32K3
 {
@@ -20,20 +21,21 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         // 寄存器字段（使用 Register Framework 简化管理）
         private readonly DoubleWordRegisterCollection _registers;
 
-        public MCResetGenerationModule(IMachine machine)
+        public MCResetGenerationModule(IMachine machine, string resetValue)
         {
             _registers = new DoubleWordRegisterCollection(this);
             // 定义寄存器与字段
-            DefineRegisters();
+            DefineRegisters(resetValue);
             // 初始复位
             Reset();
         }
 
         // 实现寄存器定义（推荐用 Register Framework）
-        private void DefineRegisters()
+        private void DefineRegisters(string resetValue)
         {
+            ResetValue value = ResetValue.Load(resetValue);
             // 控制寄存器：bit0 使能，bit1 中断使能
-            _registers.DefineRegister((long)Registers.Control, resetValue: 0x01)
+            _registers.DefineRegister((long)Registers.Control, resetValue: ResetValue.Get("MC_RGM.DES", 0x01));
                 .WithFlag(0, out _enableBit, name: "ENABLE")
                 .WithFlag(1, out _interruptEnableBit, name: "INTERRUPT_ENABLE");
 
