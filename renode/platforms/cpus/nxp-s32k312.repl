@@ -44,7 +44,8 @@ dtcm0: Memory.MappedMemory @ {
 sram: Memory.MappedMemory @ sysbus 0x20400000
     size: 0x18000
 
-mcrgm: Antmicro.Renode.Peripherals.NXP.S32K3.MCResetGenerationModule @ sysbus 0x4028C000
+mcrgm: NXP.S32K3.MCResetGenerationModule @ sysbus 0x4028C000
+    registersFileRoot: "mcrgm.json"
 
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
     nvics: [nvic0, nvic0, nvic0, nvic0]
