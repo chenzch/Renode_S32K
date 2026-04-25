@@ -3,6 +3,7 @@
 
 using sysbus
 
+include @./WT/Renode/ResetValue.cs
 include @./Peripherals/NXP/S32K3/MCResetGenerationModule.cs
 
 $name?="NXP S32K312"

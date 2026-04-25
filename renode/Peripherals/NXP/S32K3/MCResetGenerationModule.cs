@@ -21,11 +21,11 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         // 寄存器字段（使用 Register Framework 简化管理）
         private readonly DoubleWordRegisterCollection _registers;
 
-        public MCResetGenerationModule(IMachine machine, string resetValue)
+        public MCResetGenerationModule(IMachine machine, string registersFileRoot)
         {
             _registers = new DoubleWordRegisterCollection(this);
             // 定义寄存器与字段
-            DefineRegisters(resetValue);
+            DefineRegisters(registersFileRoot);
             // 初始复位
             Reset();
         }
@@ -35,9 +35,22 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         {
             ResetValue value = ResetValue.Load(resetValue);
             // 控制寄存器：bit0 使能，bit1 中断使能
-            _registers.DefineRegister((long)Registers.Control, resetValue: ResetValue.Get("MC_RGM.DES", 0x01));
-                .WithFlag(0, out _enableBit, name: "ENABLE")
-                .WithFlag(1, out _interruptEnableBit, name: "INTERRUPT_ENABLE");
+            _registers.DefineRegister((long)Registers.Control, resetValue: value.Get("MC_RGM.DES", 0x01, this.Log))
+                .WithFlag(0, out _DES_F_POR, name: "F_POR", writeCallback: (oldVal, newVal) => {_DES_F_POR.Value = (newVal ? false : oldVal);})
+                .WithFlag(3, out _DES_FCCU_FTR, name: "FCCU_FTR", writeCallback: (oldVal, newVal) => {_DES_FCCU_FTR.Value = (newVal ? false : oldVal);})
+                .WithFlag(4, out _DES_STCU_URF, name: "STCU_URF", writeCallback: (oldVal, newVal) => {_DES_STCU_URF.Value = (newVal ? false : oldVal);})
+                .WithFlag(6, out _DES_MC_RGM_FRE, name: "MC_RGM_FRE", writeCallback: (oldVal, newVal) => {_DES_MC_RGM_FRE.Value = (newVal ? false : oldVal);})
+                .WithFlag(8, out _DES_FXOSC_FAIL, name: "FXOSC_FAIL", writeCallback: (oldVal, newVal) => {_DES_FXOSC_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(9, out _DES_PLL_LOL, name: "PLL_LOL", writeCallback: (oldVal, newVal) => {_DES_PLL_LOL.Value = (newVal ? false : oldVal);})
+                .WithFlag(10, out _DES_CORE_CLK_FAIL, name: "CORE_CLK_FAIL", writeCallback: (oldVal, newVal) => {_DES_CORE_CLK_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(12, out _DES_AIPS_PLAT_CLK_FAIL, name: "AIPS_PLAT_CLK_FAIL", writeCallback: (oldVal, newVal) => {_DES_AIPS_PLAT_CLK_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(14, out _DES_HSE_CLK_FAIL, name: "HSE_CLK_FAIL", writeCallback: (oldVal, newVal) => {_DES_HSE_CLK_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(15, out _DES_SYS_DIV_FAIL, name: "SYS_DIV_FAIL", writeCallback: (oldVal, newVal) => {_DES_SYS_DIV_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(16, out _DES_CM7_CORE_CLK_FAIL, name: "CM7_CORE_CLK_FAIL", writeCallback: (oldVal, newVal) => {_DES_CM7_CORE_CLK_FAIL.Value = (newVal ? false : oldVal);})
+                .WithFlag(17, out _DES_HSE_TMPR_RST, name: "HSE_TMPR_RST", writeCallback: (oldVal, newVal) => {_DES_HSE_TMPR_RST.Value = (newVal ? false : oldVal);})
+                .WithFlag(18, out _DES_HSE_SNVS_RST, name: "HSE_SNVS_RST", writeCallback: (oldVal, newVal) => {_DES_HSE_SNVS_RST.Value = (newVal ? false : oldVal);})
+                .WithFlag(29, out _DES_SW_DEST, name: "SW_DEST", writeCallback: (oldVal, newVal) => {_DES_SW_DEST.Value = (newVal ? false : oldVal);})
+                .WithFlag(30, out _DES_DEBUG_DEST, name: "DEBUG_DEST", writeCallback: (oldVal, newVal) => {_DES_DEBUG_DEST.Value = (newVal ? false : oldVal);});
 
             // 数据寄存器：可读可写
             _registers.DefineRegister((long)Registers.Data, resetValue: 0x00)
@@ -81,8 +94,22 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         public long Size => 0x28; // 占用 40 字节（3 个寄存器共 12 字节，对齐到 16）
 
         // ---------------- 私有字段 ----------------
-        private IFlagRegisterField _enableBit;
-        private IFlagRegisterField _interruptEnableBit;
+        private IFlagRegisterField _DES_F_POR;
+        private IFlagRegisterField _DES_FCCU_FTR;
+        private IFlagRegisterField _DES_STCU_URF;
+        private IFlagRegisterField _DES_MC_RGM_FRE;
+        private IFlagRegisterField _DES_FXOSC_FAIL;
+        private IFlagRegisterField _DES_PLL_LOL;
+        private IFlagRegisterField _DES_CORE_CLK_FAIL;
+        private IFlagRegisterField _DES_AIPS_PLAT_CLK_FAIL;
+        private IFlagRegisterField _DES_HSE_CLK_FAIL;
+        private IFlagRegisterField _DES_SYS_DIV_FAIL;
+        private IFlagRegisterField _DES_CM7_CORE_CLK_FAIL;
+        private IFlagRegisterField _DES_HSE_TMPR_RST;
+        private IFlagRegisterField _DES_HSE_SNVS_RST;
+        private IFlagRegisterField _DES_SW_DEST;
+        private IFlagRegisterField _DES_DEBUG_DEST;
+
         private IValueRegisterField _dataField;
         private IFlagRegisterField _busyBit;
         private IFlagRegisterField _interruptFlagBit;

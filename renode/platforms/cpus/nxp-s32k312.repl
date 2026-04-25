@@ -45,7 +45,7 @@ sram: Memory.MappedMemory @ sysbus 0x20400000
     size: 0x18000
 
 mcrgm: NXP.S32K3.MCResetGenerationModule @ sysbus 0x4028C000
-    registersFileRoot: "mcrgm.json"
+    registersFileRoot: "/home/chenzch/Projects/renode/Renode_S32K/renode/default.json"
 
 mscm: Miscellaneous.S32K3XX_MiscellaneousSystemControlModule @ sysbus 0x40260000
     nvics: [nvic0, nvic0, nvic0, nvic0]
