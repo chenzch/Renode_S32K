@@ -2,7 +2,7 @@
 
 # 设置变量
 
-BASE_DIR="/opt/NXP/S32DS.3.6.6"
+BASE_DIR="/opt/NXP/S32DS.3.6.7"
 RTD_VER="S32K3_7.0.1"
 
 # Release 不可更改脚本

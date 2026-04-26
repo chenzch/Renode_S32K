@@ -59,11 +59,46 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
                 .WithFlag(29, out _FES_SW_FUNC, name: "SW_FUNC", writeCallback: (oldVal, newVal) => {_FES_SW_FUNC.Value = (newVal ? false : oldVal);})
                 .WithFlag(30, out _FES_DEBUG_FUNC, name: "DEBUG_FUNC", writeCallback: (oldVal, newVal) => {_FES_DEBUG_FUNC.Value = (newVal ? false : oldVal);});
 
+            _registers.DefineRegister(0x0C, resetValue: value.Get("MC_RGM.FERD", 0x00, this.Log))
+                .WithFlag(3, out _FERD_D_FCCU_RST, name: "D_FCCU_RST")
+                .WithFlag(6, out _FERD_D_SWT0_RST, name: "D_SWT0_RST")
+                .WithFlag(7, out _FERD_D_SWT1_RST, name: "D_SWT1_RST")
+                .WithFlag(8, out _FERD_D_SWT2_RST, name: "D_SWT2_RST")
+                .WithFlag(9, out _FERD_D_JTAG_RST, name: "D_JTAG_RST")
+                .WithFlag(10, out _FERD_D_SWT3_RST, name: "D_SWT3_RST")
+                .WithFlag(30, out _FERD_D_DEBUG_FUNC, name: "D_DEBUG_FUNC");
 
-            // 数据寄存器：可读可写
-            _registers.DefineRegister(0x04, resetValue: 0x00)
-                .WithValueField(0, 32, out _dataField, name: "DATA",
-                    writeCallback: (oldVal, newVal) => _dataBuffer = (uint)newVal);
+            _registers.DefineRegister(0x10, resetValue: value.Get("MC_RGM.FBRE", 0x00, this.Log))
+                .WithFlag(3, out _FBRE_BE_FCCU_RST, name: "BE_FCCU_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(4, out _FBRE_BE_ST_DONE, name: "BE_ST_DONE")
+                .WithFlag(6, out _FBRE_BE_SWT0_RST, name: "BE_SWT0_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(7, out _FBRE_BE_SWT1_RST, name: "BE_SWT1_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(8, out _FBRE_BE_SWT2_RST, name: "BE_SWT2_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(9, out _FBRE_BE_JTAG_RST, name: "BE_JTAG_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(10, out _FBRE_BE_SWT3_RST, name: "BE_SWT3_RST")
+                .WithFlag(12, out _FBRE_BE_PLL_AUX, name: "BE_PLL_AUX", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(16, out _FBRE_BE_HSE_SWT_RST, name: "BE_HSE_SWT_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(20, out _FBRE_BE_HSE_BOOT_RST, name: "BE_HSE_BOOT_RST", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(29, out _FBRE_BE_SW_FUNC, name: "BE_SW_FUNC", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;})
+                .WithFlag(30, out _FBRE_BE_DEBUG_FUNC, name: "BE_DEBUG_FUNC", writeCallback: (oldVal, newVal) => {_FES_SWT2_RST.Value = oldVal;});
+
+            _registers.DefineRegister(0x14, resetValue: value.Get("MC_RGM.FREC", 0x00, this.Log))
+                .WithValueField(0, 4, out _FREC, name: "FREC",
+                    writeCallback: (oldVal, newVal) => _FREC.Value = ((uint)oldVal & ((uint)newVal ^ 0xF)) );
+
+            _registers.DefineRegister(0x18, resetValue: value.Get("MC_RGM.FRET", 0x0F, this.Log))
+                .WithValueField(0, 4, out _FRET, name: "FRET",
+                    writeCallback: (oldVal, newVal) => { if (newVal == 0) _FREC.Value = 0; } );
+
+            _registers.DefineRegister(0x1C, resetValue: value.Get("MC_RGM.DRET", 0x00, this.Log))
+                .WithValueField(0, 4, out _DRET, name: "DRET");
+
+            _registers.DefineRegister(0x20, resetValue: value.Get("MC_RGM.ERCTRL", 0x00, this.Log))
+                .WithFlag(0, out _ERCTRL_ERASSERT, name: "ERASSERT");
+
+            _registers.DefineRegister(0x24, resetValue: value.Get("MC_RGM.RDSS", 0x00, this.Log))
+                .WithFlag(0, out _RDSS_DES_RES, name: "DES_RES", writeCallback: (oldVal, newVal) => {_RDSS_DES_RES.Value = (newVal ? false : oldVal);})
+                .WithFlag(1, out _RDSS_FES_RES, name: "FES_RES", writeCallback: (oldVal, newVal) => {_RDSS_FES_RES.Value = (newVal ? false : oldVal);});
         }
 
         // ---------------- 接口实现 ----------------
@@ -83,7 +118,6 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         public void Reset()
         {
             _registers.Reset();
-            _dataBuffer = 0x00;
             this.Log(LogLevel.Info, "MCResetGenerationModule 已复位");
         }
 
@@ -121,7 +155,33 @@ namespace Antmicro.Renode.Peripherals.NXP.S32K3
         private IFlagRegisterField _FES_SW_FUNC;
         private IFlagRegisterField _FES_DEBUG_FUNC;
 
-        private IValueRegisterField _dataField;
-        private uint _dataBuffer;
+        private IFlagRegisterField _FERD_D_FCCU_RST;
+        private IFlagRegisterField _FERD_D_SWT0_RST;
+        private IFlagRegisterField _FERD_D_SWT1_RST;
+        private IFlagRegisterField _FERD_D_SWT2_RST;
+        private IFlagRegisterField _FERD_D_JTAG_RST;
+        private IFlagRegisterField _FERD_D_SWT3_RST;
+        private IFlagRegisterField _FERD_D_DEBUG_FUNC;
+
+        private IFlagRegisterField _FBRE_BE_FCCU_RST;
+        private IFlagRegisterField _FBRE_BE_ST_DONE;
+        private IFlagRegisterField _FBRE_BE_SWT0_RST;
+        private IFlagRegisterField _FBRE_BE_SWT1_RST;
+        private IFlagRegisterField _FBRE_BE_SWT2_RST;
+        private IFlagRegisterField _FBRE_BE_JTAG_RST;
+        private IFlagRegisterField _FBRE_BE_SWT3_RST;
+        private IFlagRegisterField _FBRE_BE_PLL_AUX;
+        private IFlagRegisterField _FBRE_BE_HSE_SWT_RST;
+        private IFlagRegisterField _FBRE_BE_HSE_BOOT_RST;
+        private IFlagRegisterField _FBRE_BE_SW_FUNC;
+        private IFlagRegisterField _FBRE_BE_DEBUG_FUNC;
+
+        private IValueRegisterField _FREC;
+        private IValueRegisterField _FRET;
+        private IValueRegisterField _DRET;
+
+        private IFlagRegisterField _ERCTRL_ERASSERT;
+        private IFlagRegisterField _RDSS_DES_RES;
+        private IFlagRegisterField _RDSS_FES_RES;
     }
 }
